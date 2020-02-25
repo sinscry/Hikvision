@@ -50,10 +50,10 @@ def Cap(No,src):
         
         # 24*60*60*25=2160000
         if(tot%2160000==0):
-             print('change', No)
-             name = str(No) + '/' + name +'.avi'
-             outVideo.release() # 释放上一个视频
-             outVideo = cv2.VideoWriter(name,fourcc,fps,size)
+            print('change', No)
+            name = str(No) + '/' + name +'.avi'
+            outVideo.release() # 释放上一个视频
+            outVideo = cv2.VideoWriter(name,fourcc,fps,size)
              
         
         #使用VideoWriter类中的write(frame)方法，将图像帧写入视频文件
