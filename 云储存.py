@@ -22,8 +22,8 @@ def Cap(No,src):
     #定义编码格式mpge-4
     fourcc = cv2.VideoWriter_fourcc('M', 'P', '4', '2')
 
-    name = time.strftime("%a_%b_%d_%H_%M_%Y", time.localtime())
-    name = name+str(No)+'.avi'
+    name = time.strftime("%a_%b_%d_%H_%Y", time.localtime())
+    name = str(No)+'/'+name+'.avi'
     #定义视频文件输入对象
     outVideo = cv2.VideoWriter(name,fourcc,fps,size)
      
@@ -41,12 +41,21 @@ def Cap(No,src):
     while rval:
         rval,frame = cap.read()
         cv2.imshow('test',frame)
-        #每间隔20帧保存一张图像帧
+        #每间隔20帧保存一张图像帧,25帧一秒
         # if tot % 20 ==0 :
         #     cv2.imwrite('cut/'+'cut_'+str(c)+'.jpg',frame)
         #     c+=1
         tot+=1
-        print('tot=',tot)
+        # print('tot=',tot)
+        
+        # 24*60*60*25=2160000
+        if(tot%2160000==0):
+             print('change', No)
+             name = str(No) + '/' + name +'.avi'
+             outVideo.release() # 释放上一个视频
+             outVideo = cv2.VideoWriter(name,fourcc,fps,size)
+             
+        
         #使用VideoWriter类中的write(frame)方法，将图像帧写入视频文件
         outVideo.write(frame)
         cv2.waitKey(1)
