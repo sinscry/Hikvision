@@ -12,6 +12,17 @@ fps = 0
 size = (0,0)
 
 
+def image_collect(queue_list, camera_name):
+
+    """show in single opencv-imshow window"""
+    window_name = camera_name[0]
+    cv2.namedWindow(window_name, flags=cv2.WINDOW_FREERATIO)
+    while True:
+        imgs = [q.get() for q in queue_list]
+        imgs = np.concatenate(imgs, axis=1)
+        cv2.imshow(window_name, imgs)
+        cv2.waitKey(1)
+
 
 
 
