@@ -1,5 +1,5 @@
 import cv2
-
+import numpy as np  
 import time
 import multiprocessing as mp
 
@@ -11,7 +11,6 @@ https://github.com/Yonv1943/Python/tree/master/Demo
 fps = 0
 size = (0,0)
 
-
 def image_collect(queue_list, camera_name):
 
     """show in single opencv-imshow window"""
@@ -22,7 +21,6 @@ def image_collect(queue_list, camera_name):
         imgs = np.concatenate(imgs, axis=1)
         cv2.imshow(window_name, imgs)
         cv2.waitKey(1)
-
 
 
 
@@ -48,6 +46,7 @@ def image_put(q, ip):
         q.get() if q.qsize() > 1 else time.sleep(0.01)
 
 def image_get(q, window_name):
+    tol = 1
     cv2.namedWindow(window_name, flags=cv2.WINDOW_FREERATIO)
     fourcc = cv2.VideoWriter_fourcc('M', 'P', '4', '2')
     #定义视频文件输入对象
@@ -58,15 +57,27 @@ def image_get(q, window_name):
     outVideo = cv2.VideoWriter(name,fourcc,fps,size)
     while True:
         frame = q.get()
+
+        tol += 1
+        # 86400*25 定时更换文件名
+        if(tol%2160000==0):
+            print('change', window_name)
+            name = window_name+'/'+time.strftime("%a_%b_%d_%H_%S_%Y", time.localtime())+'.avi'
+            outVideo.release()
+            outVideo = cv2.VideoWriter(name,fourcc,fps,size)
         cv2.imshow(window_name, frame)
         outVideo.write(frame)
         cv2.waitKey(1)
 
+    outVideo.release()
+    cv2.destroyAllWindows()
+
+
 def run_multi_camera():
     # user_name, user_pwd = "admin", "password"
     camera_ip_l = [
-        "rtmp://rtmp01open.ys7.com/openlive/a1908af830434fcab0b7d9aa259bde41" ,
-        "rtmp://rtmp01open.ys7.com/openlive/a1908af830434fcab0b7d9aa259bde41"
+        "rtmp://？？" ,
+        "rtmp://？？"
         # 把你的摄像头的地址放到这里，如果是ipv6，那么需要加一个中括号。
     ]
 
@@ -76,13 +87,14 @@ def run_multi_camera():
     ]
 
 
-    mp.set_start_method(method='spawn')  # init
+    # mp.set_start_method(method='spawn')  # init
     queues = [mp.Queue(maxsize=4) for _ in camera_ip_l]
-
     processes = []
+    # processes.append(mp.Process(target=image_collect, args=(queues, camera_name_l))) # 同屏显示
     for queue, camera_ip, camera_name in zip(queues, camera_ip_l,camera_name_l):
         processes.append(mp.Process(target=image_put, args=(queue,camera_ip)))
         processes.append(mp.Process(target=image_get, args=(queue, camera_name)))
+        
 
 
 
@@ -94,6 +106,4 @@ def run_multi_camera():
         process.join()
 
 if __name__ == '__main__':
-
-
     run_multi_camera()
